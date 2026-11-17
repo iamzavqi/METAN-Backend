@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const companySchema = new Schema(
+const companyModel = new Schema(
   {
     companyName: { type: String, required: true, unique: true, lowercase: true, trim: true },
     activated: { type: Boolean, default: true },
@@ -9,4 +9,4 @@ const companySchema = new Schema(
   { timestamps: true },
 );
 
-module.exports = model("Company", companySchema);
+module.exports = model("Company", companyModel);

@@ -1,8 +1,8 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const { parseStatement } = require("../../utils/statementParser");
-const BankStatementModel = require("./bank.statement.model");
-const BankTransactionModel = require("./bank.transaction.model");
+const BankStatementModel = require("./bank.statement.module");
+const BankTransactionModel = require("./bank.transaction.module");
 
 class BankService {
   async upload(req) {
@@ -15,7 +15,7 @@ class BankService {
       );
     }
 
-    const companyID = req.user.companyID;
+    const companyId = req.user.companyId;
     const { header } = parsed;
 
     // Har bir yozuv uchun barqaror kalit: bir xil yozuv qayta yuklansa, kalit ham bir xil chiqadi
@@ -36,13 +36,13 @@ class BankService {
         .createHash("sha256")
         .update(`${base}|${n}`)
         .digest("hex");
-      return { ...t, companyID, account: header.account, dedupKey };
+      return { ...t, companyId, account: header.account, dedupKey };
     });
 
     // Avval yuklangan yozuvlarni chiqarib tashlaymiz
     const existing = new Set(
       await BankTransactionModel.distinct("dedupKey", {
-        companyID,
+        companyId,
         dedupKey: { $in: docs.map((d) => d.dedupKey) },
       }),
     );
@@ -58,7 +58,7 @@ class BankService {
         [statement] = await BankStatementModel.create(
           [
             {
-              companyID,
+              companyId,
               uploadedBy: req.user._id,
               fileName: req.file.originalname,
               account: header.account,

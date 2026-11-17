@@ -1,4 +1,4 @@
-const companyService = require('../service/company.service');
+const companyService = require('./company.service');
 
 class CompanyController {
 	async regisCompany(req, res, next) {

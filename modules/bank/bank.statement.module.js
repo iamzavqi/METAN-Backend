@@ -1,8 +1,8 @@
 const { Schema, model } = require("mongoose");
 
-const bankStatementSchema = new Schema(
+const bankStatementModel = new Schema(
   {
-    companyID: { type: Schema.Types.ObjectId, required: true, index: true },
+    companyId: { type: Schema.Types.ObjectId, required: true, index: true },
     uploadedBy: { type: Schema.Types.ObjectId, required: true },
     fileName: String,
     account: { type: String, required: true },
@@ -16,7 +16,7 @@ const bankStatementSchema = new Schema(
     added: Number,
     skipped: Number,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-module.exports = model("BankStatement", bankStatementSchema);
+module.exports = model("BankStatement", bankStatementModel);

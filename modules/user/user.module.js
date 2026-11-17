@@ -1,13 +1,21 @@
 const { Schema, model } = require("mongoose");
 
-const userSchema = new Schema(
+const userModel = new Schema(
   {
     fName: { type: String, required: true },
     lName: { type: String, required: true },
     phone: { type: String },
     role: {
       type: String,
-      enum: ["admin", "director", "manager", "moliyachi", "texnik"],
+      enum: [
+        "admin",
+        "director",
+        "ceo",
+        "moliyachi",
+        "bugalter",
+        "kassir",
+        "texnik",
+      ],
     },
     activated: { type: Boolean, default: true },
     lastSeen: { type: Date, default: new Date() },
@@ -19,10 +27,11 @@ const userSchema = new Schema(
       trim: true,
     },
     password: { type: String, required: true },
+    balance: { type: Number, default: 0 },
     telegramID: { type: String },
-    companyID: { type: Schema.ObjectId, ref: "Company", required: true },
+    companyId: { type: Schema.ObjectId, ref: "Company", required: true },
   },
   { timestamps: true },
 );
 
-module.exports = model("User", userSchema);
+module.exports = model("User", userModel);

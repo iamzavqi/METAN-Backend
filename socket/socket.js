@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const corsOptions = require("../config/corsOptions");
 const BaseError = require("../errors/base.error");
 const { JWT_SECRET } = require("../config/env");
-const UserSchema = require("../schema/user.schema");
+const UserModel = require("../modules/user/user.model");
 
 let io;
 
@@ -18,7 +18,7 @@ const initSocket = (httpServer) => {
     try {
       const payload = jwt.verify(socket.handshake.auth.token, JWT_SECRET);
       socket.userId = payload._id;
-      socket.companyId = payload.companyID;
+      socket.companyId = payload.companyId;
       next();
     } catch (err) {
       console.error("Socket auth xatosi:", err.message);
@@ -38,7 +38,7 @@ const initSocket = (httpServer) => {
       try {
         const stillOnline = (await io.in(userRoom).fetchSockets()).length > 0;
         if (!stillOnline) {
-          await UserSchema.findByIdAndUpdate(socket.userId, {
+          await UserModel.findByIdAndUpdate(socket.userId, {
             lastSeen: new Date(),
           });
         }
@@ -52,8 +52,8 @@ const initSocket = (httpServer) => {
 
 const getOnlineIds = async (companyRoom) => {
   const sockets = await io.in(companyRoom).fetchSockets();
-  return [...new Set(sockets.map((s) => s.userId))]
-}
+  return [...new Set(sockets.map((s) => s.userId))];
+};
 
 const getIO = () => io;
 

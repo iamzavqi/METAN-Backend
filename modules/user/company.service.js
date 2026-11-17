@@ -1,4 +1,4 @@
-const CompanySchema = require("../schema/company.schema");
+const CompanyModel = require("./company.module");
 
 class CompanyService {
   async regisCompany(req, res) {
@@ -6,12 +6,12 @@ class CompanyService {
       throw new Error("Siz admin emassiz");
     }
 
-    const existCompany = await CompanySchema.findOne({
+    const existCompany = await CompanyModel.findOne({
       companyName: req.body.companyName,
     });
     if (existCompany) throw new Error("Kompaniya allaqachon mavjud");
 
-    const newCompany = await CompanySchema.create({
+    const newCompany = await CompanyModel.create({
       companyName: req.body.companyName,
       phone: req.body.phone,
     });
@@ -22,7 +22,7 @@ class CompanyService {
       throw new Error("Siz admin emassiz");
     }
 
-    const company = await CompanySchema.find();
+    const company = await CompanyModel.find();
 
     return company;
   }

@@ -1,10 +1,10 @@
 const argon2 = require("argon2");
-const token = require("../utils/generateToken");
-const UserSchema = require("../schema/user.schema");
+const token = require("../../utils/generateToken");
+const UserModel = require("./user.module");
 
 class AuthService {
   async regis(req, res) {
-    const { fName, lName, phone, userName, password, role, companyID } =
+    const { fName, lName, phone, userName, password, role, companyId } =
       req.body;
     if (
       !fName ||
@@ -13,27 +13,25 @@ class AuthService {
       !userName ||
       !password ||
       !role ||
-      !companyID
+      !companyId
     ) {
       throw new Error("Barcha maydonlarni to'ldiring");
     }
 
-    
-
-    const existUser = await UserSchema.findOne({ userName });
+    const existUser = await UserModel.findOne({ userName });
 
     if (existUser)
       throw new Error(`User ${existUser.userName} oldin ro'yxatdan o'tgan`);
 
     const hashPassword = await argon2.hash(password);
-    const user = await UserSchema.create({
+    const user = await UserModel.create({
       fName,
       lName,
       phone,
       userName,
       password: hashPassword,
       role,
-      companyID,
+      companyId,
     });
 
     return {
@@ -42,13 +40,13 @@ class AuthService {
         lName: user.lName,
         userName: user.userName,
         role: user.role,
-        companyID: user.companyID,
+        companyId: user.companyId,
       },
     };
   }
 
   async login(userName, password) {
-    const user = await UserSchema.findOne({ userName });
+    const user = await UserModel.findOne({ userName });
     if (!user) {
       throw new Error("Login yoki parol xato");
     }
@@ -68,7 +66,7 @@ class AuthService {
       userName: user.userName,
       role: user.role,
       activated: user.activated,
-      companyID: user.companyID,
+      companyId: user.companyId,
     });
 
     return {
@@ -77,21 +75,21 @@ class AuthService {
   }
 
   async checkUser(req, res) {
-    const user = await UserSchema.findById(req.user._id).populate("companyID");
+    const user = await UserModel.findById(req.user._id).populate("companyId");
     if (user._id) {
       return {
         _id: user._id,
         fName: user.fName,
         lName: user.lName,
         role: user.role,
-        company: user.companyID.companyName,
+        company: user.companyId.companyName,
       };
     }
   }
 
   async allUsers(req, res) {
-    const users = await UserSchema.find({
-      companyID: req.user.companyID,
+    const users = await UserModel.find({
+      companyId: req.user.companyId,
     });
 
     return users;
