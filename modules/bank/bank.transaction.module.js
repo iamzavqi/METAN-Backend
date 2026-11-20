@@ -26,9 +26,9 @@ const bankTransactionModel = new Schema(
 );
 
 // Bitta yozuv ikki marta saqlanmasligi uchun
-bankTransactionSchema.index({ companyId: 1, dedupKey: 1 }, { unique: true });
+bankTransactionModel.index({ companyId: 1, dedupKey: 1 }, { unique: true });
 // Hisobotlar uchun
-bankTransactionSchema.index({ companyId: 1, account: 1, date: 1 });
-bankTransactionSchema.index({ companyId: 1, counterpartyInn: 1 });
+bankTransactionModel.index({ companyId: 1, account: 1, date: 1 });
+bankTransactionModel.index({ companyId: 1, counterpartyInn: 1 });
 
 module.exports = model("BankTransaction", bankTransactionModel);

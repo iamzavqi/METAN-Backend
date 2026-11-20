@@ -6,15 +6,10 @@ class AuthService {
   async regis(req, res) {
     const { fName, lName, phone, userName, password, role, companyId } =
       req.body;
-    if (
-      !fName ||
-      !lName ||
-      !phone ||
-      !userName ||
-      !password ||
-      !role ||
-      !companyId
-    ) {
+
+    const required = [fName, lName, phone, userName, password, role, companyId];
+
+    if (required.some((v) => typeof v !== "string" || !v.trim())) {
       throw new Error("Barcha maydonlarni to'ldiring");
     }
 

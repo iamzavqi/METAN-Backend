@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const corsOptions = require("../config/corsOptions");
 const BaseError = require("../errors/base.error");
 const { JWT_SECRET } = require("../config/env");
-const UserModel = require("../modules/user/user.model");
+const UserModel = require("../modules/user/user.module");
 
 let io;
 
@@ -14,11 +14,21 @@ const initSocket = (httpServer) => {
     transports: ["websocket", "polling"],
   });
 
-  io.use((socket, next) => {
+  // 1. Auth: token + bazadan hozirgi rol va holat
+  io.use(async (socket, next) => {
     try {
       const payload = jwt.verify(socket.handshake.auth.token, JWT_SECRET);
-      socket.userId = payload._id;
-      socket.companyId = payload.companyId;
+
+      const user = await UserModel.findById(payload._id)
+        .select("companyId role activated")
+        .lean();
+      if (!user || !user.activated) {
+        throw new Error("User topilmadi yoki bloklangan");
+      }
+
+      socket.data.userId = String(user._id);
+      socket.data.companyId = String(user.companyId);
+      socket.data.role = user.role;
       next();
     } catch (err) {
       console.error("Socket auth xatosi:", err.message);
@@ -26,11 +36,16 @@ const initSocket = (httpServer) => {
     }
   });
 
+  // 2. Ulanish
   io.on("connection", async (socket) => {
-    console.log("Socket connected:", socket.id, "user:", socket.userId);
-    const userRoom = `user:${socket.userId}`;
-    const companyRoom = `company:${socket.companyId}`;
-    socket.join([userRoom, companyRoom]);
+    const { userId, companyId, role } = socket.data;
+    console.log("Socket connected:", socket.id, "user:", userId, "role:", role);
+
+    const userRoom = `user:${userId}`;
+    const companyRoom = `company:${companyId}`;
+    const roleRoom = `company:${companyId}:role:${role}`;
+
+    socket.join([userRoom, companyRoom, roleRoom]);
     io.to(companyRoom).emit("onlineUsers", await getOnlineIds(companyRoom));
 
     socket.on("disconnect", async () => {
@@ -38,9 +53,7 @@ const initSocket = (httpServer) => {
       try {
         const stillOnline = (await io.in(userRoom).fetchSockets()).length > 0;
         if (!stillOnline) {
-          await UserModel.findByIdAndUpdate(socket.userId, {
-            lastSeen: new Date(),
-          });
+          await UserModel.findByIdAndUpdate(userId, { lastSeen: new Date() });
         }
         io.to(companyRoom).emit("onlineUsers", await getOnlineIds(companyRoom));
       } catch (err) {
@@ -52,9 +65,16 @@ const initSocket = (httpServer) => {
 
 const getOnlineIds = async (companyRoom) => {
   const sockets = await io.in(companyRoom).fetchSockets();
-  return [...new Set(sockets.map((s) => s.userId))];
+  return [...new Set(sockets.map((s) => s.data.userId))];
+};
+
+// Kompaniyadagi aniq rollarga xabar yuborish
+const emitToRoles = (companyId, roles, event, data) => {
+  if (!io) return;
+  const rooms = roles.map((role) => `company:${companyId}:role:${role}`);
+  io.to(rooms).emit(event, data);
 };
 
 const getIO = () => io;
 
-module.exports = { initSocket, getIO };
+module.exports = { initSocket, getIO, emitToRoles };

@@ -16,7 +16,11 @@ const saleModel = new Schema(
 
     // Server hisoblaydi, clientdan qabul qilinmaydi
     totalAmount: { type: Number, default: 0 }, // volume * pricePerCube
-    difference: { type: Number, default: 0 }, // (naqd + terminal + perech.) - jami; + ortiqcha, - kamomad
+    difference: {
+      type: Number,
+      default: 0,
+      min: [0, "Olingan pul jami summadan kam bo'lishi mumkin emas"],
+    }, // (naqd + terminal + perech.) - jami; + ortiqcha, - kamomad
 
     status: {
       type: String,
@@ -27,5 +31,15 @@ const saleModel = new Schema(
   },
   { timestamps: true },
 );
+
+// Validatsiyadan oldin summalarni hisoblaydi
+saleModel.pre("validate", function () {
+  this.totalAmount = Math.round(this.volume * this.pricePerCube);
+  this.difference = this.cash + this.terminal + this.transfer - this.totalAmount;
+});
+
+
+saleModel.index({ companyId: 1, status: 1, date: -1 });
+saleModel.index({ companyId: 1, date: 1 }, { unique: true });
 
 module.exports = model("Sale", saleModel);

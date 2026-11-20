@@ -28,7 +28,7 @@ const userModel = new Schema(
     },
     password: { type: String, required: true },
     balance: { type: Number, default: 0 },
-    telegramID: { type: String },
+    telegramId: { type: String },
     companyId: { type: Schema.ObjectId, ref: "Company", required: true },
   },
   { timestamps: true },
