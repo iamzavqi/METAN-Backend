@@ -15,12 +15,15 @@ class WalletService {
       throw new Error("Hamyon mavjud");
     }
 
-    const newWallet = await WalletModel.create({
+    let walletData = {
       walletName: req.body.walletName,
       color: req.body.color,
       userId: req.user._id,
       companyId: req.user.companyId,
-    });
+    }
+    if (req.body.bankNumber) walletData.bankNumber = req.body.bankNumber
+
+    const newWallet = await WalletModel.create(walletData);
     return newWallet;
   }
 
@@ -82,7 +85,7 @@ class WalletService {
     return WalletModel.find({ companyId });
   }
 
-  async allWallets(req, res) {
+  async getWallets(req, res) {
     const wallets = await WalletModel.find({ companyId: req.user.companyId });
     return wallets;
   }

@@ -18,9 +18,9 @@ class WalletController {
     }
   }
 
-  async allWallet(req, res, next) {
+  async getWallets(req, res, next) {
     try {
-      const wallets = await walletService.allWallets(req, res);
+      const wallets = await walletService.getWallets(req, res);
       return res.json(wallets);
     } catch (error) {
       next(error);
