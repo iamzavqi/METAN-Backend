@@ -4,17 +4,17 @@ const bankStatementModel = new Schema(
   {
     companyId: { type: Schema.Types.ObjectId, required: true, index: true },
     uploadedBy: { type: Schema.Types.ObjectId, required: true },
-    fileName: String,
+    fileName: { type: String },
     account: { type: String, required: true },
-    ownerInn: String,
-    periodFrom: Date,
-    periodTo: Date,
-    openingBalance: Number, // hamma summalar tiyinda
-    closingBalance: Number,
-    totalDebit: Number,
-    totalCredit: Number,
-    added: Number,
-    skipped: Number,
+    ownerInn: { type: String },
+    periodFrom: { type: Date },
+    periodTo: { type: Date },
+    openingBalance: { type: Number }, // hamma summalar tiyinda
+    closingBalance: { type: Number },
+    totalDebit: { type: Number },
+    totalCredit: { type: Number },
+    added: { type: Number },
+    skipped: { type: Number },
   },
   { timestamps: true },
 );

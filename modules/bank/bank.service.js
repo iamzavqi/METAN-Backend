@@ -93,6 +93,17 @@ class BankService {
       skipped: docs.length - fresh.length,
     };
   }
+
+    async getTransactions(req, res) {
+    const transactions = await BankTransactionModel.find({
+      companyId: req.user.companyId,
+      categoryId: null,
+    })
+      .sort({ date: -1, createdAt: -1 })
+      .lean();
+
+    return transactions;
+  }
 }
 
 module.exports = new BankService();

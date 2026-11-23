@@ -8,6 +8,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
-router.post("/bank-statements", authMiddleware, upload.single("file"), bankController.upload);
+router.post("/upload", authMiddleware, upload.single("file"), bankController.upload);
+router.get("/transactions", authMiddleware, bankController.getTransactions);
 
 module.exports = router;
