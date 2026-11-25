@@ -17,6 +17,22 @@ class SaleController {
 			next(error)
 		}
   }
+  async approveSale(req, res, next) {
+    try {
+      const sale = await saleService.approveSale(req, res);
+      return res.json(sale);
+    } catch (error) {
+			next(error)
+		}
+  }
+  async rejectSale(req, res, next) {
+    try {
+      const sale = await saleService.rejectSale(req, res);
+      return res.json(sale);
+    } catch (error) {
+			next(error)
+		}
+  }
 }
 
 

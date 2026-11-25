@@ -9,7 +9,6 @@ router.use("/categories", require("../modules/categories/categories.routes"));
 
 router.use("/sale", require("../modules/sale/sale.routes"));
 router.use("/wallet", require("../modules/wallet/wallet.routes"));
-router.use("/bank", require("../modules/bank/bank.routes"));
 
 
 
