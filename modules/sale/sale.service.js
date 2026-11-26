@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const SaleModel = require("./sale.module");
 const FirmModel = require("./firm/firm.module");
+const WalletModel = require("../wallet/wallet.module");
 const BaseError = require("../../errors/base.error");
 const { emitToRoles } = require("../../socket/socket");
 
@@ -146,7 +147,90 @@ class SaleService {
       .lean();
   }
 
-  async approveSale(req, res) {}
+  async approveSale(req, res) {
+    const { id } = req.params;
+    const companyId = req.user.companyId;
+
+    if (!mongoose.isValidObjectId(id)) {
+      throw BaseError.BadRequest("Sotuv topilmadi");
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+      await session.withTransaction(async () => {
+        // 1. Sotuvni tasdiqlash: faqat shu kompaniyaning kutilayotgan sotuvi
+        const sale = await SaleModel.findOneAndUpdate(
+          { _id: id, companyId, status: "pending" },
+          { status: "approved", approvedBy: req.user._id },
+          { new: true, session },
+        );
+
+        if (!sale) {
+          throw BaseError.BadRequest(
+            "Sotuv topilmadi yoki allaqachon ko'rib chiqilgan",
+          );
+        }
+
+        // 2. Naqd pul → "naqt" hamyoni
+        if (sale.cash > 0) {
+          const naqt = await WalletModel.findOne({
+            companyId,
+            walletName: "naqt",
+          }).session(session);
+
+          if (!naqt) {
+            throw BaseError.BadRequest('"naqt" hamyoni topilmadi');
+          }
+
+          naqt.balance += sale.cash
+          await naqt.save({ session });
+        }
+
+        // 3. Terminal → "yoldagi pul" hamyoni
+        if (sale.terminal > 0) {
+          const yoldagiPul = await WalletModel.findOne({
+            companyId,
+            walletName: "yoldagi pul",
+          }).session(session);
+
+          if (!yoldagiPul) {
+            throw BaseError.BadRequest("yoldagi pul hamyoni topilmadi");
+          }
+
+          yoldagiPul.balance += sale.terminal
+          await yoldagiPul.save({ session });
+        }
+
+        // 4. Perechisleniya → har bir firmaning balansi
+        for (const item of sale.transferItems) {
+          const firm = await FirmModel.findOne({
+            _id: item.firmId,
+            companyId,
+          }).session(session);
+
+          if (!firm) {
+            throw BaseError.BadRequest("Perechisleniyadagi firma topilmadi");
+          }
+
+          firm.balance += item.amount;
+          await firm.save({ session });
+        }
+      });
+    } finally {
+      await session.endSession();
+    }
+
+    // 5. Frontend uchun: kassir va firma nomlari bilan
+    const approvedSale = await SaleModel.findById(id)
+      .populate("userId", "fName lName")
+      .populate("transferItems.firmId", "firmName inn")
+      .lean();
+
+    emitToRoles(String(companyId), SALE_ROLES, "sale:updated", approvedSale);
+
+    return approvedSale;
+  }
 
   async rejectSale(req, res) {
     const rejectedSale = await SaleModel.findByIdAndUpdate(
