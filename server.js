@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const errorMiddleware = require("./middleware/error.middleware");
 const { initSocket } = require("./socket/socket");
+const {initBot, stopBot} = require("./telegram/bot")
 const app = express();
 app.set("trust proxy", 1);
 
@@ -37,9 +38,18 @@ const server = async () => {
     serverInstance.listen(PORT, () => {
       console.log(`Server ${PORT} da ishga tushdi `);
     });
+    initBot()
   } catch (error) {
     console.error("Server xatosi:", error);
   }
 };
+
+// Server to'xtaganda botni ham to'g'ri to'xtatamiz
+const shutdown = async () => {
+  await stopBot();
+  process.exit(0);
+};
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
 
 server();

@@ -75,6 +75,13 @@ const emitToRoles = (companyId, roles, event, data) => {
   io.to(rooms).emit(event, data);
 };
 
+// Aniq userlarga xabar yuborish (har biri o'z user:<id> xonasida)
+const emitToUsers = (userIds, event, data) => {
+  if (!io || !userIds.length) return;
+  const rooms = [...new Set(userIds.map((id) => `user:${String(id)}`))];
+  io.to(rooms).emit(event, data);
+};
+
 const getIO = () => io;
 
-module.exports = { initSocket, getIO, emitToRoles };
+module.exports = { initSocket, getIO, emitToRoles, emitToUsers };

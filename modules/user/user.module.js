@@ -18,7 +18,7 @@ const userModel = new Schema(
       ],
     },
     activated: { type: Boolean, default: true },
-    lastSeen: { type: Date, default: new Date() },
+    lastSeen: { type: Date, default: null },
     userName: {
       type: String,
       required: true,
