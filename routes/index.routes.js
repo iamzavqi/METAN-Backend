@@ -7,8 +7,9 @@ router.use("/auth/company", require("../modules/user/company.routes"));
 router.use("/uploads", require("./image.routes"));
 router.use("/categories", require("../modules/categories/categories.routes"));
 
-router.use("/sale", require("../modules/sale/sale.routes"));
 router.use("/wallet", require("../modules/wallet/wallet.routes"));
+router.use("/sale", require("../modules/sale/sale.routes"));
+router.use("/sklad", require("../modules/sklad/sklad.routes"));
 
 
 
